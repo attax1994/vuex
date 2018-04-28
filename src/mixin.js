@@ -2,7 +2,7 @@ export default function (Vue) {
   const version = Number(Vue.version.split('.')[0])
 
   if (version >= 2) {
-    Vue.mixin({ beforeCreate: vuexInit })
+    Vue.mixin({beforeCreate: vuexInit})
   } else {
     // override init and inject vuex init procedure
     // for 1.x backwards compatibility.
@@ -19,7 +19,7 @@ export default function (Vue) {
    * Vuex init hook, injected into each instances init hooks list.
    */
 
-  function vuexInit () {
+  function vuexInit() {
     const options = this.$options
     // store injection
     if (options.store) {

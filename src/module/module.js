@@ -1,4 +1,4 @@
-import { forEachValue } from '../util'
+import {forEachValue} from '../util'
 
 // Base data struct for store's module, package with some attribute and method
 /**
@@ -10,7 +10,7 @@ export default class Module {
    * @param rawModule
    * @param runtime   是否为运行时所需模块，true则不许注销
    */
-  constructor (rawModule, runtime) {
+  constructor(rawModule, runtime) {
     // 是否为运行时的临时模块，涉及到能否在ModuleCollection进行模块的动态unregister
     this.runtime = runtime
     // Store some children item
@@ -27,22 +27,22 @@ export default class Module {
   }
 
   // 直接返回_rawModule的namespaced字段的boolean性
-  get namespaced () {
+  get namespaced() {
     return !!this._rawModule.namespaced
   }
 
   // 添加一个子模块（放进this._children字典）
-  addChild (key, module) {
+  addChild(key, module) {
     this._children[key] = module
   }
 
   // 移除一个子模块（从this._children字典删除该属性）
-  removeChild (key) {
+  removeChild(key) {
     delete this._children[key]
   }
 
   // 读取一个子模块
-  getChild (key) {
+  getChild(key) {
     return this._children[key]
   }
 
@@ -50,7 +50,7 @@ export default class Module {
    * 传入一个新的rawModule，在原有基础上，覆盖其namespaced, actions, mutations和getters字段
    * @param rawModule
    */
-  update (rawModule) {
+  update(rawModule) {
     this._rawModule.namespaced = rawModule.namespaced
     if (rawModule.actions) {
       this._rawModule.actions = rawModule.actions
@@ -66,23 +66,23 @@ export default class Module {
   /**
    * 以下都是forEach操作，遍历执行一个function
    */
-  forEachChild (fn) {
+  forEachChild(fn) {
     forEachValue(this._children, fn)
   }
 
-  forEachGetter (fn) {
+  forEachGetter(fn) {
     if (this._rawModule.getters) {
       forEachValue(this._rawModule.getters, fn)
     }
   }
 
-  forEachAction (fn) {
+  forEachAction(fn) {
     if (this._rawModule.actions) {
       forEachValue(this._rawModule.actions, fn)
     }
   }
 
-  forEachMutation (fn) {
+  forEachMutation(fn) {
     if (this._rawModule.mutations) {
       forEachValue(this._rawModule.mutations, fn)
     }
