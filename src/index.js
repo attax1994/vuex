@@ -3,6 +3,7 @@ import { mapState, mapMutations, mapGetters, mapActions, createNamespacedHelpers
 
 export default {
   Store,
+  // Vue.use()使用
   install,
   version: '__VERSION__',
   mapState,

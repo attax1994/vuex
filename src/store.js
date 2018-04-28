@@ -10,33 +10,49 @@ export class Store {
     // Auto install if it is not done yet and `window` has `Vue`.
     // To allow users to avoid auto-installation in some cases,
     // this code should be placed here. See #731
+    // 如果没有运行Vue.install(Vuex)，但是window下已经有Vue全局对象，就需要先安装
     if (!Vue && typeof window !== 'undefined' && window.Vue) {
       install(window.Vue)
     }
 
+    /**
+     * 生产环境的断言
+     */
     if (process.env.NODE_ENV !== 'production') {
+      // new Store()前要Vue.use(Vuex)
       assert(Vue, `must call Vue.use(Vuex) before creating a store instance.`)
+      // 检查浏览器是否支持Promise
       assert(typeof Promise !== 'undefined', `vuex requires a Promise polyfill in this browser.`)
+      // 检查是否使用new操作符去创建实例
       assert(this instanceof Store, `store must be called with the new operator.`)
     }
 
+    // plugins和strict是从options中解构得到
     const {
       plugins = [],
       strict = false
     } = options
 
-    // store internal state
+    /**
+     * store的内部状态变量(模拟private)
+     */
     this._committing = false
+    // 全空的对象，没有__proto__，通常用来做字典
     this._actions = Object.create(null)
     this._actionSubscribers = []
     this._mutations = Object.create(null)
     this._wrappedGetters = Object.create(null)
+    // modules（对应options的modules字段）
     this._modules = new ModuleCollection(options)
+    // module的命名空间(namespace)字典
     this._modulesNamespaceMap = Object.create(null)
     this._subscribers = []
+    // 用一个Vue实例来进行变量的监测
     this._watcherVM = new Vue()
 
-    // bind commit and dispatch to self
+    /**
+     * 对默认的dispatch和commit做一层闭包，执行的时候自动传入store自身，传参时候只需要传后面几个参数
+     */
     const store = this
     const { dispatch, commit } = this
     this.dispatch = function boundDispatch (type, payload) {
@@ -46,7 +62,10 @@ export class Store {
       return commit.call(store, type, payload, options)
     }
 
-    // strict mode
+    /**
+     * 是否为严格模式，strict从实参options中解构得到
+     * @type {boolean}
+     */
     this.strict = strict
 
     const state = this._modules.root.state

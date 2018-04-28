@@ -1,9 +1,12 @@
 import Module from './module'
 import { assert, forEachValue } from '../util'
 
+// 模块（Modules字段）集合类
 export default class ModuleCollection {
+
   constructor (rawRootModule) {
     // register root module (Vuex.Store options)
+    // 注册根模块，也就是Vuex.Store的options实参
     this.register([], rawRootModule, false)
   }
 
@@ -25,11 +28,19 @@ export default class ModuleCollection {
     update([], this.root, rawRootModule)
   }
 
+  /**
+   * 注册一个Module
+   * @param path      对应的路径
+   * @param rawModule Module的初始内容，通常是一个对象
+   * @param runtime   是否在运行时注入
+   */
   register (path, rawModule, runtime = true) {
+    // 生产环境下做断言检查
     if (process.env.NODE_ENV !== 'production') {
       assertRawModule(path, rawModule)
     }
 
+    // 根据传入的Module初始内容，去创建一个改造的Module实例
     const newModule = new Module(rawModule, runtime)
     if (path.length === 0) {
       this.root = newModule
@@ -84,6 +95,10 @@ function update (path, targetModule, newModule) {
   }
 }
 
+
+/**
+ * 下面都是用于断言检查
+ */
 const functionAssert = {
   assert: value => typeof value === 'function',
   expected: 'function'
