@@ -101,8 +101,14 @@ export class Store {
     }
   }
 
+  /**
+   * 执行一个mutation，可以传入type、payload、options，或是对象型参数
+   * @param _type
+   * @param _payload
+   * @param _options
+   */
   commit(_type, _payload, _options) {
-    // check object-style commit
+    // 参数规整（主要针对传入对象的情况）
     const {
       type,
       payload,
@@ -110,18 +116,24 @@ export class Store {
     } = unifyObjectStyle(_type, _payload, _options)
 
     const mutation = {type, payload}
+    // 找到this._mutations中对应的类型
     const entry = this._mutations[type]
+
+    // mutation类型不存在时的异常处理
     if (!entry) {
       if (process.env.NODE_ENV !== 'production') {
         console.error(`[vuex] unknown mutation type: ${type}`)
       }
       return
     }
+
+    // 传参执行
     this._withCommit(() => {
       entry.forEach(function commitIterator(handler) {
         handler(payload)
       })
     })
+    // 触发订阅者的更新
     this._subscribers.forEach(sub => sub(mutation, this.state))
 
     if (
@@ -135,8 +147,14 @@ export class Store {
     }
   }
 
+  /**
+   * 执行一个action，可以传入type、payload，或是对象型参数
+   * @param _type
+   * @param _payload
+   * @return {*}
+   */
   dispatch(_type, _payload) {
-    // check object-style dispatch
+    // 参数规整（主要针对传入对象的情况）
     const {
       type,
       payload
@@ -151,21 +169,40 @@ export class Store {
       return
     }
 
+    // 触发订阅者的更新
     this._actionSubscribers.forEach(sub => sub(action, this.state))
 
+    // 如果有多个，使用Promise.all()方法异步执行
     return entry.length > 1
       ? Promise.all(entry.map(handler => handler(payload)))
       : entry[0](payload)
   }
 
+  /**
+   * 给mutations添加订阅者，参考下方的genericSubscribe()函数
+   * @param fn
+   * @return {*}
+   */
   subscribe(fn) {
     return genericSubscribe(fn, this._subscribers)
   }
 
+  /**
+   * 给actions添加订阅者，参考下方的genericSubscribe()函数
+   * @param fn
+   * @return {*}
+   */
   subscribeAction(fn) {
     return genericSubscribe(fn, this._actionSubscribers)
   }
 
+  /**
+   * 使用Vue实例来监测某个变量，并设置回调
+   * @param getter
+   * @param cb
+   * @param options
+   * @return {*}
+   */
   watch(getter, cb, options) {
     if (process.env.NODE_ENV !== 'production') {
       assert(typeof getter === 'function', `store.watch only accepts a function.`)
@@ -173,12 +210,22 @@ export class Store {
     return this._watcherVM.$watch(() => getter(this.state, this.getters), cb, options)
   }
 
+  /**
+   * state的显式set()
+   * @param state
+   */
   replaceState(state) {
     this._withCommit(() => {
       this._vm._data.$$state = state
     })
   }
 
+  /**
+   * 手动注册一个模块
+   * @param path
+   * @param rawModule
+   * @param options
+   */
   registerModule(path, rawModule, options = {}) {
     if (typeof path === 'string') path = [path]
 
@@ -189,10 +236,14 @@ export class Store {
 
     this._modules.register(path, rawModule)
     installModule(this, this.state, path, this._modules.get(path), options.preserveState)
-    // reset store to update getters...
+    // 重置Vue实例，更新getters
     resetStoreVM(this, this.state)
   }
 
+  /**
+   * 手动注销一个模块
+   * @param path
+   */
   unregisterModule(path) {
     if (typeof path === 'string') path = [path]
 
@@ -200,14 +251,21 @@ export class Store {
       assert(Array.isArray(path), `module path must be a string or an Array.`)
     }
 
+    // 从this._modules中移除
     this._modules.unregister(path)
+    // 移除在Vue实例中的相关监测
     this._withCommit(() => {
       const parentState = getNestedState(this.state, path.slice(0, -1))
       Vue.delete(parentState, path[path.length - 1])
     })
+    // 初始化整个store
     resetStore(this)
   }
 
+  /**
+   * 热更新，即更新完成后重置store
+   * @param newOptions
+   */
   hotUpdate(newOptions) {
     this._modules.update(newOptions)
     resetStore(this, true)
@@ -226,10 +284,18 @@ export class Store {
   }
 }
 
+/**
+ * 生成一次订阅
+ * @param fn
+ * @param subs
+ * @return {Function}
+ */
 function genericSubscribe(fn, subs) {
+  // 如果传入的fn还没有加入订阅，就将其加入
   if (subs.indexOf(fn) < 0) {
     subs.push(fn)
   }
+  // 返回的闭包用于解除订阅
   return () => {
     const i = subs.indexOf(fn)
     if (i > -1) {
@@ -238,15 +304,21 @@ function genericSubscribe(fn, subs) {
   }
 }
 
+/**
+ * 重置store
+ * @param store
+ * @param hot
+ */
 function resetStore(store, hot) {
+  // 全部初始化为空对象
   store._actions = Object.create(null)
   store._mutations = Object.create(null)
   store._wrappedGetters = Object.create(null)
   store._modulesNamespaceMap = Object.create(null)
   const state = store.state
-  // init all modules
+  // 初始化所有模块
   installModule(store, state, [], store._modules.root, true)
-  // reset vm
+  // 重置Vue实例
   resetStoreVM(store, state, hot)
 }
 
@@ -577,6 +649,7 @@ function getNestedState(state, path) {
  * @return {{type: *, payload: *, options: *}}
  */
 function unifyObjectStyle(type, payload, options) {
+  // 如果传入的是对象，要进行额外的规整
   if (isObject(type) && type.type) {
     options = payload
     payload = type
