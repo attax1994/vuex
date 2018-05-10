@@ -30,7 +30,7 @@ export class Store {
     // plugins和strict是从options中解构得到
     const {
       plugins = [],
-      strict = false
+      strict = false,
     } = options
 
     /**
@@ -112,7 +112,7 @@ export class Store {
     const {
       type,
       payload,
-      options
+      options,
     } = unifyObjectStyle(_type, _payload, _options)
 
     const mutation = {type, payload}
@@ -142,7 +142,7 @@ export class Store {
     ) {
       console.warn(
         `[vuex] mutation type: ${type}. Silent option has been removed. ` +
-        'Use the filter functionality in the vue-devtools'
+        'Use the filter functionality in the vue-devtools',
       )
     }
   }
@@ -157,7 +157,7 @@ export class Store {
     // 参数规整（主要针对传入对象的情况）
     const {
       type,
-      payload
+      payload,
     } = unifyObjectStyle(_type, _payload)
 
     const action = {type, payload}
@@ -343,7 +343,7 @@ function resetStoreVM(store, state, hot) {
     Object.defineProperty(store.getters, key, {
       // 改造get()，采用vm的机制
       get: () => store._vm[key],
-      enumerable: true // for local getters
+      enumerable: true, // for local getters
     })
   })
 
@@ -358,9 +358,9 @@ function resetStoreVM(store, state, hot) {
   Vue.config.silent = true
   store._vm = new Vue({
     data: {
-      $$state: state
+      $$state: state,
     },
-    computed
+    computed,
   })
   Vue.config.silent = silent
 
@@ -484,7 +484,7 @@ function makeLocalContext(store, namespace, path) {
       }
 
       store.commit(type, payload, options)
-    }
+    },
   }
 
   /**
@@ -496,11 +496,11 @@ function makeLocalContext(store, namespace, path) {
     getters: {
       get: noNamespace
         ? () => store.getters
-        : () => makeLocalGetters(store, namespace)
+        : () => makeLocalGetters(store, namespace),
     },
     state: {
-      get: () => getNestedState(store.state, path)
-    }
+      get: () => getNestedState(store.state, path),
+    },
   })
 
   return local
@@ -529,7 +529,7 @@ function makeLocalGetters(store, namespace) {
      */
     Object.defineProperty(gettersProxy, localType, {
       get: () => store.getters[type],
-      enumerable: true
+      enumerable: true,
     })
   })
 
@@ -568,7 +568,7 @@ function registerAction(store, type, handler, local) {
       getters: local.getters,
       state: local.state,
       rootGetters: store.getters,
-      rootState: store.state
+      rootState: store.state,
     }, payload, cb)
 
     /**
@@ -610,7 +610,7 @@ function registerGetter(store, type, rawGetter, local) {
       local.state, // local state
       local.getters, // local getters
       store.state, // root state
-      store.getters // root getters
+      store.getters, // root getters
     )
   }
 }
@@ -671,7 +671,7 @@ export function install(_Vue) {
   if (Vue && _Vue === Vue) {
     if (process.env.NODE_ENV !== 'production') {
       console.error(
-        '[vuex] already installed. Vue.use(Vuex) should be called only once.'
+        '[vuex] already installed. Vue.use(Vuex) should be called only once.',
       )
     }
     return
