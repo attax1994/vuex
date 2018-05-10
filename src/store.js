@@ -10,7 +10,7 @@ export class Store {
     // Auto install if it is not done yet and `window` has `Vue`.
     // To allow users to avoid auto-installation in some cases,
     // this code should be placed here. See #731
-    // 如果没有运行Vue.install(Vuex)，但是window下已经有Vue全局对象，就需要先安装
+    // 如果没有运行Vue.install(Vuex)，但是window下已经有Vue全局对象，就需要先安装Vue
     if (!Vue && typeof window !== 'undefined' && window.Vue) {
       install(window.Vue)
     }
